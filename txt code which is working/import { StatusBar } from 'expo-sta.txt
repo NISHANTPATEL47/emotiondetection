@@ -1,0 +1,68 @@
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet,Button, Text, TouchableOpacity, View, Image } from 'react-native';
+import { Camera } from 'expo-camera';
+import { useEffect,useState } from 'react';
+
+export default function App() {
+  const [hascampermission,sethascampermission] = useState(null);
+  const [camera,setCamera] = useState(null);
+  const [image,setImage] = useState(null);
+  const [type,setType] = useState(Camera.Constants.Type.back);
+
+  useEffect(() =>{
+    (async() =>{
+      const camStatus = await Camera.requestCameraPermissionsAsync();
+      sethascampermission(camStatus.status === "granted");
+    })();
+  },[])
+
+  const takePicture = async ()=>{
+    if (camera){
+      const data = await camera.takePictureAsync();
+      setImage(data.uri)
+    }
+  }
+  return (
+    <View style={styles.container}>
+      <View style={styles.cameraContainer}>
+        <Camera 
+         style={styles.camRatio}
+         type={type}
+         ratio={'1:1'} 
+         ref={(ref) => setCamera(ref) } />
+      </View>
+      <View style={{flex:0,flexDirection:'row',justifyContent:'center'}}>
+        <TouchableOpacity onPress={()=>{
+          setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back)
+        }}>
+        <Image  style={styles.icons} source={require('./images/phota.png')} />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => takePicture()}>
+        <Image  style={styles.icons} source={require('./images/phota.png')} />
+        </TouchableOpacity>
+      </View>
+      {image && <Image source={{uri:image}}  style={{flex:1}} />}
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
+  cameraContainer:{
+    flex:1,
+    flexDirection: "row",
+  },
+  camRatio:{
+    flex:1,
+    aspectRatio:1,
+  },
+  icons:{
+    width:50,
+    height:50,
+    margin:10
+  },
+});
